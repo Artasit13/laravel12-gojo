@@ -5,21 +5,22 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\WeightLogController;
 
+// 1. หน้าแรกสุดแสดงหน้า Laravel สีดำแดง
 Route::get('/', function () {
     return view('welcome');
 });
 
-// เมื่อล็อกอินสำเร็จ จะเด้งไปหน้า /weights ทันที
+// 2. หน้า Dashboard แสดงหน้า Dashboard ปกติ (ไม่ให้แอบเด้งไปหน้า weights เอง)
 Route::get('/dashboard', function () {
-    return redirect()->route('weights.index');
+    return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// เพิ่มลิงก์สำหรับกดออกจากระบบ (เข้า /logout เพื่อออกจากระบบได้ทันที)
-Route::get('/logout', function () {
+// 3. ปุ่มลัดสำหรับบังคับออกจากระบบ แล้วไปหน้า Login ทันที
+Route::get('/force-login', function () {
     Auth::logout();
     request()->session()->invalidate();
     request()->session()->regenerateToken();
-    return redirect('/about-me');
+    return redirect('/login');
 });
 
 Route::middleware('auth')->group(function () {
@@ -83,7 +84,7 @@ Route::get('/active/contact', function () {
 
 require __DIR__.'/auth.php';
 
-// Resource Routes สำหรับระบบติดตามน้ำหนัก (ติด auth ตามโจทย์ข้อ 2.c)
+// 4. ระบบติดตามน้ำหนัก (ติด auth ตามโจทย์: ถ้ายังไม่ล็อกอินจะเด้งไปหน้า Login ทันที และพอล็อกอินเสร็จจะกลับมาหน้านี้เอง)
 Route::middleware(['auth'])->group(function () {
     Route::get('/weights', [WeightLogController::class, 'index'])->name('weights.index');
     Route::post('/weights', [WeightLogController::class, 'store'])->name('weights.store');
@@ -91,6 +92,10 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/weights/{weightLog}', [WeightLogController::class, 'destroy'])->name('weights.destroy');
 });
 
+// 5. หน้า About Me (บังคับเคลียร์สถานะล็อกอินทุกครั้งที่เปิดหน้านี้ เพื่อทดสอบกดปุ่มแล้วติดหน้า Login ได้เสมอ)
 Route::get('/about-me', function () {
+    Auth::logout();
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
     return view('project.about-me');
 });

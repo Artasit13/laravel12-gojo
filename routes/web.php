@@ -72,7 +72,7 @@ require __DIR__.'/auth.php';
 
 
 Route::get('/', function () {
-    return redirect()->route('weights.index');
+    return view('welcome');
 });
 
 // Resource Routes สำหรับระบบติดตามน้ำหนัก

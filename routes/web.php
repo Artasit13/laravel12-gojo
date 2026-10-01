@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\WeightLogController;
 
 Route::get('/', function () {
@@ -12,6 +13,14 @@ Route::get('/', function () {
 Route::get('/dashboard', function () {
     return redirect()->route('weights.index');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+// เพิ่มลิงก์สำหรับกดออกจากระบบ (เข้า /logout เพื่อออกจากระบบได้ทันที)
+Route::get('/logout', function () {
+    Auth::logout();
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+    return redirect('/about-me');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -74,11 +83,13 @@ Route::get('/active/contact', function () {
 
 require __DIR__.'/auth.php';
 
-// Resource Routes สำหรับระบบติดตามน้ำหนัก (เปิดดูหน้าได้ แต่กดบันทึก/แก้ไข/ลบ ต้อง Login)
-Route::get('/weights', [WeightLogController::class, 'index'])->name('weights.index');
-Route::post('/weights', [WeightLogController::class, 'store'])->name('weights.store')->middleware('auth');
-Route::put('/weights/{weightLog}', [WeightLogController::class, 'update'])->name('weights.update')->middleware('auth');
-Route::delete('/weights/{weightLog}', [WeightLogController::class, 'destroy'])->name('weights.destroy')->middleware('auth');
+// Resource Routes สำหรับระบบติดตามน้ำหนัก (ติด auth ตามโจทย์ข้อ 2.c)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/weights', [WeightLogController::class, 'index'])->name('weights.index');
+    Route::post('/weights', [WeightLogController::class, 'store'])->name('weights.store');
+    Route::put('/weights/{weightLog}', [WeightLogController::class, 'update'])->name('weights.update');
+    Route::delete('/weights/{weightLog}', [WeightLogController::class, 'destroy'])->name('weights.destroy');
+});
 
 Route::get('/about-me', function () {
     return view('project.about-me');

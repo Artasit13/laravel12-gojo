@@ -81,5 +81,5 @@ Route::post('/weights', [WeightLogController::class, 'store'])->name('weights.st
 Route::put('/weights/{weightLog}', [WeightLogController::class, 'update'])->name('weights.update');
 Route::delete('/weights/{weightLog}', [WeightLogController::class, 'destroy'])->name('weights.destroy');
 Route::get('/about-me', function () {
-    return view('about-me');
+    return view('project.about-me');
 });
